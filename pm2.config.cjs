@@ -3,8 +3,7 @@ module.exports = {
     {
       name: "socket-server",
       script: "index.js",
-      exec_mode: "cluster",
-      instances: "max",
+      exec_mode: "fork",
       autorestart: true,
       watch: false,
       version: "1.0.0",
