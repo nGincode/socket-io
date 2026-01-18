@@ -34,12 +34,12 @@ io.on("connection", (socket) => {
   });
 
   // 🔥 SYNC TRANSACTION
-  socket.on("sync-transaction", ({ storeId, data }) => {
+  socket.on("sync-transaction", ({ storeId, userId }) => {
     const room = `store-${String(storeId)}`;
     console.log(`🔄 sync-transaction from ${socket.id} → ${room}`);
 
     // broadcast ke device lain
-    socket.to(room).emit("sync-transaction", { storeId, data });
+    socket.to(room).emit("sync-transaction", { storeId, userId });
   });
 
   // 🔥 SYNC ITEM
