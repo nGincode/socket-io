@@ -39,7 +39,7 @@ io.on("connection", (socket) => {
     console.log(`🔄 sync-transaction from ${socket.id} → ${room}`);
 
     // broadcast ke device lain
-    socket.to(room).emit("sync-transaction", data);
+    socket.to(room).emit("sync-transaction", { storeId, data });
   });
 
   // 🔥 SYNC ITEM
@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
     const room = `store-${String(storeId)}`;
     console.log(`📦 sync-item → ${room}`);
 
-    io.to(room).emit("sync-item");
+    io.to(room).emit("sync-item", { storeId });
   });
 
   socket.on("disconnect", () => {
