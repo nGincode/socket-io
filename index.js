@@ -27,6 +27,7 @@ io.use((socket, next) => {
   next();
 });
 
+const ipCount = new Map();
 io.use((socket, next) => {
   const ip =
     socket.handshake.headers["cf-connecting-ip"] || socket.handshake.address;
