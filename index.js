@@ -15,17 +15,35 @@ const io = new Server(server, {
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
 
-  console.log(token, process.env.SOCKET_SECRET);
-
   if (!token) {
     return next(new Error("NO_TOKEN"));
   }
 
-  if (token !== process.env.SOCKET_SECRET) {
+  if (token !== "fembinurilham+nGincode+WGyR/aeiufhnowty=") {
     return next(new Error("INVALID_TOKEN"));
   }
 
   socket.authenticated = true;
+  next();
+});
+
+io.use((socket, next) => {
+  const ip =
+    socket.handshake.headers["cf-connecting-ip"] || socket.handshake.address;
+
+  const current = ipCount.get(ip) || 0;
+
+  if (current >= 10) {
+    return next(new Error("TOO_MANY_CONNECTIONS"));
+  }
+
+  ipCount.set(ip, current + 1);
+
+  socket.on("disconnect", () => {
+    const now = ipCount.get(ip) || 1;
+    ipCount.set(ip, Math.max(0, now - 1));
+  });
+
   next();
 });
 
@@ -74,5 +92,5 @@ io.on("connection", (socket) => {
 
 const PORT = 1991;
 server.listen(PORT, () => {
-  console.log(`🚀 404 Not Found Claudflare`);
+  console.log(`🚀 socket on`);
 });
