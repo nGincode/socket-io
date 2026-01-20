@@ -9,7 +9,23 @@ const io = new Server(server, {
   transports: ["polling", "websocket"],
   allowUpgrades: true,
   cors: {
-    origin: "*",
+    origin: (origin, callback) => {
+      // ❌ React Native tidak kirim origin (undefined/null)
+      if (!origin) return callback(null, true);
+
+      // ✅ Allowed web origins (Backoffice)
+      const allowedOrigins = [
+        "https://backoffice.ekasir.web.id",
+        "https://ekasir.web.id",
+      ];
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // ❌ origin lain ditolak
+      return callback(new Error("CORS_NOT_ALLOWED"));
+    },
     methods: ["GET", "POST"],
   },
 });
