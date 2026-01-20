@@ -57,5 +57,5 @@ io.on("connection", (socket) => {
 
 const PORT = 1991;
 server.listen(PORT, () => {
-  console.log(`🚀 Socket.IO server listening on port ${PORT}`);
+  console.log(`🚀 404 Not Found Claudflare ${PORT}`);
 });
