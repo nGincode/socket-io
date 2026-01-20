@@ -107,6 +107,6 @@ io.on("connection", (socket) => {
 /* =====================
    🚀 START
 ===================== */
-server.listen(8443, () => {
+server.listen(1991, () => {
   console.log("🚀 wss://socket.ekasir.web.id:8443");
 });
