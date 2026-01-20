@@ -1,61 +1,112 @@
-const express = require("express");
-const http = require("http");
+const fs = require("fs");
+const https = require("https");
 const { Server } = require("socket.io");
 
-const app = express();
-const server = http.createServer(app);
+const server = https.createServer({
+  key: fs.readFileSync(
+    "/etc/letsencrypt/live/socket.ekasir.web.id/privkey.pem",
+  ),
+  cert: fs.readFileSync(
+    "/etc/letsencrypt/live/socket.ekasir.web.id/fullchain.pem",
+  ),
+});
+
+const ipCount = new Map();
 
 const io = new Server(server, {
+  transports: ["websocket"],
+  allowUpgrades: false,
   cors: {
-    origin: "*",
+    origin: (origin, callback) => {
+      // React Native (origin undefined)
+      if (!origin) return callback(null, true);
+
+      const allowed = [
+        "https://backoffice.ekasir.web.id",
+        "https://ekasir.web.id",
+      ];
+
+      if (allowed.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS_NOT_ALLOWED"));
+    },
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("🔌 Client connected:", socket.id);
+/* =====================
+   🔐 AUTH
+===================== */
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
 
-  socket.onAny((event, ...args) => {
-    console.log(`📨 [${socket.id}]`, event, args);
-  });
+  if (!token) return next(new Error("NO_TOKEN"));
+  if (token !== process.env.SOCKET_SECRET) {
+    return next(new Error("INVALID_TOKEN"));
+  }
 
-  // JOIN STORE
-  socket.on("join-store", (storeId) => {
-    const room = `store-${String(storeId)}`;
-    socket.join(room);
-    console.log(`🏪 ${socket.id} joined ${room}`);
-  });
+  next();
+});
 
-  // LEAVE STORE
-  socket.on("leave-store", (storeId) => {
-    const room = `store-${String(storeId)}`;
-    socket.leave(room);
-    console.log(`🚪 ${socket.id} left ${room}`);
-  });
+/* =====================
+   🛡️ RATE LIMIT (AMAN)
+===================== */
+io.use((socket, next) => {
+  const ip =
+    socket.handshake.headers["cf-connecting-ip"] || socket.handshake.address;
 
-  // 🔥 SYNC TRANSACTION
-  socket.on("sync-transaction", ({ storeId, userId }) => {
-    const room = `store-${String(storeId)}`;
-    console.log(`🔄 sync-transaction from ${socket.id} → ${room}`);
+  const current = ipCount.get(ip) || 0;
 
-    // broadcast ke device lain
-    socket.to(room).emit("sync-transaction", { storeId, userId });
-  });
+  if (current >= 10) {
+    return next(new Error("TOO_MANY_CONNECTIONS"));
+  }
 
-  // 🔥 SYNC ITEM
-  socket.on("sync-item", ({ storeId }) => {
-    const room = `store-${String(storeId)}`;
-    console.log(`📦 sync-item → ${room}`);
-
-    io.to(room).emit("sync-item", { storeId });
-  });
+  ipCount.set(ip, current + 1);
 
   socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
+    const now = ipCount.get(ip) || 1;
+    ipCount.set(ip, Math.max(0, now - 1));
+  });
+
+  next();
+});
+
+/* =====================
+   🔌 SOCKET EVENTS
+===================== */
+io.on("connection", (socket) => {
+  console.log("🟢 CONNECTED:", socket.id);
+
+  socket.on("join-store", (storeId) => {
+    socket.join(`store:${storeId}`);
+  });
+
+  socket.on("leave-store", (storeId) => {
+    socket.leave(`store:${storeId}`);
+  });
+
+  socket.on("sync-transaction", ({ storeId, userId }) => {
+    socket.to(`store:${storeId}`).emit("sync-transaction", {
+      storeId,
+      userId,
+    });
+  });
+
+  socket.on("sync-item", ({ storeId }) => {
+    io.to(`store:${storeId}`).emit("sync-item", { storeId });
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log("🔴 DISCONNECTED:", socket.id, reason);
   });
 });
 
-const PORT = 1991;
-server.listen(PORT, () => {
-  console.log(`🚀 404 Not Found Claudflare ${PORT}`);
+/* =====================
+   🚀 START
+===================== */
+server.listen(8443, () => {
+  console.log("🚀 wss://socket.ekasir.web.id:8443");
 });
