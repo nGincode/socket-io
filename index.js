@@ -14,8 +14,6 @@ const server = https.createServer({
 const ipCount = new Map();
 
 const io = new Server(server, {
-  transports: ["websocket"],
-  allowUpgrades: false,
   cors: {
     origin: (origin, callback) => {
       // React Native (origin undefined)
