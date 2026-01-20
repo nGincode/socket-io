@@ -15,6 +15,8 @@ const io = new Server(server, {
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
 
+  console.log(token, process.env.SOCKET_SECRET);
+
   if (!token) {
     return next(new Error("NO_TOKEN"));
   }
@@ -72,5 +74,5 @@ io.on("connection", (socket) => {
 
 const PORT = 1991;
 server.listen(PORT, () => {
-  console.log(`🚀 404 Not Found Claudflare ${PORT}`);
+  console.log(`🚀 404 Not Found Claudflare`);
 });
