@@ -27,6 +27,7 @@ const io = new Server(server, {
       return callback(new Error("CORS_NOT_ALLOWED"));
     },
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
