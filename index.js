@@ -6,6 +6,8 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
+  transports: ["polling", "websocket"],
+  allowUpgrades: true,
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
