@@ -7,13 +7,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://ekasir.web.id",
-      "https://www.ekasir.web.id",
-      "https://backoffice.ekasir.web.id/",
-    ],
+    origin: "*",
     methods: ["GET", "POST"],
-    credentials: true,
   },
 });
 
