@@ -186,8 +186,8 @@ io.on("connection", (socket) => {
 
 app.disable("x-powered-by");
 
-app.get("*", (req, res) => {
-  res.redirect(301, "https://ekasir.web.id");
+app.get("/", (req, res) => {
+  res.redirect("https://ekasir.web.id");
 });
 
 const PORT = process.env.PORT || 1991;
