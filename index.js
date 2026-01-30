@@ -6,7 +6,6 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  transports: ["polling", "websocket"],
   allowUpgrades: true,
   cors: {
     origin: (origin, callback) => {
@@ -17,6 +16,8 @@ const io = new Server(server, {
       const allowedOrigins = [
         "https://backoffice.ekasir.web.id",
         "https://ekasir.web.id",
+        "https://socket.ekasir.web.id:8443",
+        "https://socket.ekasir.web.id",
       ];
 
       if (allowedOrigins.includes(origin)) {
@@ -26,6 +27,7 @@ const io = new Server(server, {
       // ❌ origin lain ditolak
       return callback(new Error("CORS_NOT_ALLOWED"));
     },
+    allowEIO3: true,
     methods: ["GET", "POST"],
     credentials: true,
   },
