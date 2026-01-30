@@ -184,6 +184,12 @@ io.on("connection", (socket) => {
   });
 });
 
+app.disable("x-powered-by");
+
+app.get("*", (req, res) => {
+  res.redirect(301, "https://ekasir.web.id");
+});
+
 const PORT = process.env.PORT || 1991;
 server.listen(PORT, () => {
   console.log(`🚀 Socket Server running on port ${PORT}`);
