@@ -160,13 +160,15 @@ io.on("connection", (socket) => {
       return console.error("❌ Invalid sync-transaction payload");
     }
 
-    const { storeId, userId } = data;
+    const { storeId, userId, senderSocketId } = data;
     const room = `store-${String(storeId)}`;
 
     // console.log(`🔄 sync-transaction ${room}`); // Log seperlunya saja
 
     // Broadcast ke device lain di toko yang sama (kecuali pengirim)
-    socket.to(room).emit("sync-transaction", { storeId, userId });
+    socket
+      .to(room)
+      .emit("sync-transaction", { storeId, userId, senderSocketId });
   });
 
   // --- 🔥 SYNC ITEM ---
