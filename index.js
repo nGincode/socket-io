@@ -194,7 +194,7 @@ io.on("connection", (socket) => {
     const { storeId } = data;
     const room = `store-${String(storeId)}`;
 
-    io.to(room).emit("payment-status-updated", {
+    io.to(room).emit("sync-payment-update", {
       storeId: data.storeId,
       orderId: data.orderId,
       transactionStatus: data.transactionStatus,
