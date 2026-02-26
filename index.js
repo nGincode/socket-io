@@ -184,6 +184,22 @@ io.on("connection", (socket) => {
     // Gunakan io.to jika ingin broadcast ke semua, socket.to jika exclude pengirim
     io.to(room).emit("sync-item", { storeId });
   });
+
+  // --- 🔥 Payment ---
+  socket.on("sync-payment-update", (data) => {
+    if (isRateLimited(socket.id)) return;
+
+    if (!data || !data.storeId) return;
+
+    const { storeId } = data;
+    const room = `store-${String(storeId)}`;
+
+    io.to(room).emit("payment-status-updated", {
+      storeId: data.storeId,
+      orderId: data.orderId,
+      transactionStatus: data.transactionStatus,
+    });
+  });
 });
 
 app.disable("x-powered-by");
