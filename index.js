@@ -200,6 +200,22 @@ io.on("connection", (socket) => {
       transactionStatus: data.transactionStatus,
     });
   });
+
+  // --- 🔥 Setting ---
+  socket.on("setting-update", (data) => {
+    if (isRateLimited(socket.id)) return;
+
+    if (!data || !data.storeId) return;
+
+    const { storeId } = data;
+    const room = `store-${String(storeId)}`;
+
+    io.to(room).emit("setting-update", {
+      storeId: data.storeId,
+      orderId: data.orderId,
+      dataSetting: data.dataSetting,
+    });
+  });
 });
 
 app.disable("x-powered-by");
