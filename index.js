@@ -212,7 +212,6 @@ io.on("connection", (socket) => {
 
     io.to(room).emit("setting-update", {
       storeId: data.storeId,
-      orderId: data.orderId,
       dataSetting: data.dataSetting,
     });
   });
