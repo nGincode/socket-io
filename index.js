@@ -20,6 +20,7 @@ const io = new Server(server, {
       const allowedOrigins = [
         "https://backoffice.ekasir.web.id",
         "https://ekasir.web.id",
+        "https://socket.ekasir.web.id",
         "http://localhost:1998",
       ];
 
