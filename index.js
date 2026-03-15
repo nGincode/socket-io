@@ -20,8 +20,7 @@ const io = new Server(server, {
       const allowedOrigins = [
         "https://backoffice.ekasir.web.id",
         "https://ekasir.web.id",
-        "https://socket.ekasir.web.id:8443", // Jika via port
-        "https://socket.ekasir.web.id", // Jika via domain utama
+        "http://localhost:1998",
       ];
 
       if (allowedOrigins.includes(origin)) {
