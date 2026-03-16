@@ -63,30 +63,38 @@ io.use((socket, next) => {
   next();
 });
 
-// --- 🛡️ 2. CONNECTION RATE LIMITER (Anti DDOS Sederhana) ---
+// --- 🛡️ 2. CONNECTION RATE LIMITER ---
 const ipCount = new Map();
-const MAX_CONN_PER_IP = 10;
+const MAX_CONN_PER_IP = 10; // Naikkan sedikit untuk toleransi dev/refresh
 
 io.use((socket, next) => {
-  // Ambil IP Asli dari Cloudflare atau Direct
   const ip =
     socket.handshake.headers["cf-connecting-ip"] || socket.handshake.address;
-
   const current = ipCount.get(ip) || 0;
 
   if (current >= MAX_CONN_PER_IP) {
-    console.warn(`⛔ IP ${ip} blocked due to too many connections.`);
+    // TIPS: Beri tahu IP mana yang kena limit di log server
+    console.warn(`⛔ IP ${ip} blocked (${current}/${MAX_CONN_PER_IP}).`);
     return next(new Error("TOO_MANY_CONNECTIONS"));
   }
 
   ipCount.set(ip, current + 1);
 
-  socket.on("disconnect", () => {
-    const now = ipCount.get(ip) || 1;
-    if (now <= 1) {
-      ipCount.delete(ip); // Hapus dari memori agar Map tidak bengkak
-    } else {
-      ipCount.set(ip, now - 1);
+  // Tambahkan flag agar kita tidak mengurangi count dua kali
+  socket.ipTracked = true;
+
+  socket.on("disconnect", (reason) => {
+    if (socket.ipTracked) {
+      const now = ipCount.get(ip) || 1;
+      if (now <= 1) {
+        ipCount.delete(ip);
+      } else {
+        ipCount.set(ip, now - 1);
+      }
+      socket.ipTracked = false;
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`📉 IP ${ip} decreased. Current: ${now - 1}`);
+      }
     }
   });
 
